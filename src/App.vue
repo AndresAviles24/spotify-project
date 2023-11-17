@@ -1,5 +1,4 @@
-<script setup lang="ts"></script>
-
+<script></script>
 <template>
   <header>
     <div class="wrapper"></div>
