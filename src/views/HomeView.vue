@@ -9,7 +9,6 @@
   import { getAuthUrl } from '@/services/auth';
   
   export default {
-    name: 'Login',
     methods: {
       loginWithSpotify() {
         window.location.href = getAuthUrl();

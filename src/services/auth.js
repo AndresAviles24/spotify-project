@@ -1,8 +1,9 @@
 // auth.js
 import axios from 'axios';
 
-const CLIENT_ID = import.meta.env.VUE_APP_SPOTIFY_CLIENT_ID;
-const REDIRECT_URI = import.meta.env.VUE_APP_SPOTIFY_REDIRECT_URI;
+ const CLIENT_ID = 'a5344dfe5f4947b6933c3c9d623f1f79';
+ const REDIRECT_URI='http://localhost:5173/form';
+
 
 const getAuthUrl = () => {
   const scope = 'user-top-read';
@@ -18,7 +19,7 @@ const getToken = async (code) => {
   const response = await axios.post('https://accounts.spotify.com/api/token', params, {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': 'Basic ' + btoa(`${CLIENT_ID}:${import.meta.env.VUE_APP_SPOTIFY_CLIENT_SECRET}`)
+      'Authorization': 'Basic ' + btoa(`${CLIENT_ID}:28ff856aa98b44f0808a852548f7b9fa`)//Client secret
     }
   });
 
