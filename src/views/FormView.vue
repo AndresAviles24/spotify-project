@@ -1,10 +1,12 @@
 <template>
   <div class="dashboard-container">
+    <app-header />
     <h1>Tu Dashboard de Spotify</h1>
     <top-artists v-if="authorized" />
     <top-tracks v-if="authorized" />
     <genres-list v-if="authorized" />
     <p v-else>Autorizando...</p>
+    <app-footer />
   </div>
 </template>
 
@@ -16,12 +18,17 @@ import { getToken } from '@/services/auth';
 import TopArtists from '@/components/TopArtists.vue';
 import TopTracks from '@/components/TopTracks.vue';
 import GenresList from '@/components/GenresList.vue';
+import AppHeader from '@/components/AppHeader.vue';
+import AppFooter from '@/components/AppFooter.vue';
 
 export default {
   components: {
     TopArtists,
     TopTracks,
-    GenresList
+    GenresList,
+    AppHeader,
+    AppFooter,
+    
   },
   setup() {
     const authorized = ref(false);

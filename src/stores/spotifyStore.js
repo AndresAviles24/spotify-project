@@ -11,7 +11,6 @@ export const useSpotifyStore = defineStore('spotify', {
     genres: [],     // Agrega un estado para almacenar los géneros
   }),
   actions: {
-    // ... otras acciones como authenticate y refreshToken ...
 
     async fetchTopArtists() {
       try {
@@ -46,6 +45,12 @@ export const useSpotifyStore = defineStore('spotify', {
     setToken(newToken) {
       this.accessToken = newToken;
       localStorage.setItem('spotify_access_token', newToken);
+    },
+
+    clearTokens() {
+      this.accessToken = null; // Limpia el token del estado
+      localStorage.removeItem('spotify_access_token'); // Elimina el token del almacenamiento local
+      // Realiza acciones adicionales si es necesario
     },
   }
 });
