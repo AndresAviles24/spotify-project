@@ -1,6 +1,11 @@
 // spotifyStore.js
 import { defineStore } from 'pinia'
-import { getTopArtists, getTopTracks, getGenres } from '@/services/spotifyService'
+import {
+  getTopArtists,
+  getTopTracks,
+  getGenres,
+  getRecommendations
+} from '@/services/spotifyService'
 
 export const useSpotifyStore = defineStore('spotify', {
   state: () => ({
@@ -8,7 +13,8 @@ export const useSpotifyStore = defineStore('spotify', {
     refreshToken: null,
     topArtists: [], // Agrega un estado para almacenar los artistas top
     topTracks: [], // Agrega un estado para almacenar las pistas top
-    genres: [] // Agrega un estado para almacenar los géneros
+    genres: [], // Agrega un estado para almacenar los géneros
+    recommendations: []
   }),
   actions: {
     async fetchTopArtists() {
@@ -38,6 +44,25 @@ export const useSpotifyStore = defineStore('spotify', {
         console.error('Error al obtener los géneros musicales:', error)
         // Manejo del error
       }
+    },
+
+    async fetchRecommendations(seedArtists, seedTracks, seedGenres, limit) {
+      try {
+        const response = await getRecommendations(
+          this.accessToken,
+          seedArtists,
+          seedTracks,
+          seedGenres,
+          limit
+        )
+        this.recommendations = response.data.tracks
+      } catch (error) {
+        console.error('Error al obtener recomendaciones:', error)
+      }
+    },
+
+    clearRecommendations() {
+      this.recommendations = []
     },
 
     setToken(newToken) {

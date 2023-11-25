@@ -23,8 +23,8 @@
 
       <!-- Botón para generar la playlist -->
       <div v-if="authorized">
-        <br />
         <button @click="generatePlaylist">Generar Playlist</button>
+        <br />
       </div>
       <p v-else>Autorizando...</p>
     </div>
@@ -90,6 +90,9 @@ export default {
     return {
       authorized
     }
+  },
+  methods: {
+    async generatePlaylist() {}
   }
 }
 </script>

@@ -1,18 +1,31 @@
 <template>
   <div class="top-artists-container">
     <h2>Tus Artistas Más Escuchados (elegir hasta 5)</h2>
-    <div v-if="topArtists.length > 0" class="artist-cards-container">
-      <div class="card" v-for="artist in topArtists" :key="artist.id">
-        <img class="card-img-top artist-image" :src="artist.images[0]?.url" :alt="artist.name" />
-        <div class="card-body">
-          <h5 class="card-title">{{ artist.name }}</h5>
-          <!-- Botón removido ya que será reemplazado por radio buttons -->
+    <form class="artist-selection-form" v-if="topArtists.length > 0">
+      <div class="artist-cards-container">
+        <div class="card" v-for="artist in topArtists" :key="artist.id">
+          <label :for="`artist-${artist.id}`">
+            <img
+              class="card-img-top artist-image"
+              :src="artist.images[0]?.url"
+              :alt="artist.name"
+            />
+            <div class="card-body">
+              <h5 class="card-title">{{ artist.name }}</h5>
+              <input
+                type="checkbox"
+                :id="`artist-${artist.id}`"
+                :value="artist.id"
+                v-model="selectedArtists"
+                @change="checkLimit"
+              />
+            </div>
+          </label>
         </div>
       </div>
-    </div>
+    </form>
     <p v-else>Cargando tus artistas más escuchados...</p>
   </div>
-  <br />
 </template>
 
 <script>
@@ -20,10 +33,22 @@ import { useSpotifyStore } from '@/stores/spotifyStore'
 
 export default {
   name: 'TopArtists',
+  data() {
+    return {
+      selectedArtists: []
+    }
+  },
   computed: {
     topArtists() {
       const spotifyStore = useSpotifyStore()
       return spotifyStore.topArtists
+    }
+  },
+  methods: {
+    checkLimit() {
+      if (this.selectedArtists.length > 5) {
+        this.selectedArtists = this.selectedArtists.slice(0, 5)
+      }
     }
   },
   async created() {

@@ -1,36 +1,4 @@
 // spotifyService.js
-/*
-import axios from 'axios';
-import { useSpotifyStore } from '@/stores/spotifyStore';
-
-const apiClient = axios.create({
-  baseURL: 'https://api.spotify.com/v1',
-  headers: {
-    'Content-Type': 'application/json'
-  }
-});
-
-apiClient.interceptors.request.use((config) => {
-  const store = useSpotifyStore();
-  config.headers['Authorization'] = `Bearer ${store.accessToken}`;
-  return config;
-});
-
-const getTopTracks = () => {
-  return apiClient.get('/me/top/tracks');
-};
-
-const getTopArtists = () => {
-  return apiClient.get('/me/top/artists');
-};
-
-const getGenres = () => {
-  return apiClient.get('/recommendations/available-genre-seeds');
-};
-
-export { getTopTracks, getTopArtists, getGenres };
-*/
-// spotifyService.js
 import axios from 'axios'
 
 const apiClient = axios.create({
@@ -59,4 +27,17 @@ const getGenres = (token) => {
   })
 }
 
-export { getTopTracks, getTopArtists, getGenres }
+const getRecommendations = (token, seedArtists, seedTracks, seedGenres, limit) => {
+  const params = new URLSearchParams({
+    seed_artists: seedArtists.join(','),
+    seed_tracks: seedTracks.join(','),
+    seed_genres: seedGenres.join(','),
+    limit
+  })
+
+  return apiClient.get(`/recommendations?${params}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+}
+
+export { getTopTracks, getTopArtists, getGenres, getRecommendations }

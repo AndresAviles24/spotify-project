@@ -1,13 +1,16 @@
 <template>
   <div class="genres-list-container">
     <h2>Géneros Musicales (elegir hasta 5)</h2>
-    <select v-if="genres.length > 0" class="form-select" aria-label="Selecciona un género">
-      <option v-for="genre in genres" :key="genre" :value="genre">{{ genre }}</option>
-    </select>
+    <div v-if="genres.length > 0" class="genre-selectors">
+      <!-- Repeat the select element for the number of genres you want to display -->
+      <select v-for="n in 5" class="form-select" aria-label="Selecciona un género" :key="n">
+        <option value="">Selecciona un género</option>
+        <option v-for="genre in genres" :key="genre" :value="genre">{{ genre }}</option>
+      </select>
+    </div>
     <p v-else>Cargando géneros musicales...</p>
   </div>
 </template>
-
 <script>
 import { computed, onMounted } from 'vue' // Importa las funciones necesarias de Vue
 import { useRouter } from 'vue-router' // Importa useRouter de Vue Router para usar la instancia del enrutador
@@ -45,4 +48,16 @@ export default {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.genre-selectors {
+  display: flex;
+  gap: 1rem; /* Adjust the gap to match your mockup */
+  justify-content: space-between; /* This will space out your dropdowns evenly */
+  margin-bottom: 1rem; /* Space below the dropdowns */
+}
+
+.form-select {
+  flex: 1; /* Each select will take up equal space */
+  min-width: 0; /* Overcome the minimum width of flex items in some browsers */
+}
+</style>

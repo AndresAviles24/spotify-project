@@ -1,30 +1,54 @@
 <template>
   <div class="top-tracks-container">
     <h2>Tus Canciones Más Escuchadas (elegir hasta 5)</h2>
-    <div v-if="topTracks.length > 0" class="track-cards-container">
-      <div class="card" v-for="track in topTracks" :key="track.id">
-        <img class="card-img-top track-image" :src="track.album.images[0].url" :alt="track.name" />
-        <div class="card-body">
-          <h5 class="card-title">{{ track.name }}</h5>
-          <p class="card-text">{{ track.album.name }}</p>
-          <!-- El botón será reemplazado por un radio button en la implementación final -->
+    <form class="track-selection-form">
+      <div v-if="topTracks.length > 0" class="track-cards-container">
+        <div class="card" v-for="track in topTracks" :key="track.id">
+          <label :for="`track-${track.id}`">
+            <img
+              class="card-img-top track-image"
+              :src="track.album.images[0]?.url"
+              :alt="track.name"
+            />
+            <div class="card-body">
+              <h5 class="card-title">{{ track.name }}</h5>
+              <p class="card-text">{{ track.album.name }}</p>
+              <input
+                type="checkbox"
+                :id="`track-${track.id}`"
+                :value="track.id"
+                v-model="selectedTracks"
+                @change="checkLimit"
+              />
+            </div>
+          </label>
         </div>
       </div>
-    </div>
-    <p v-else>Cargando tus canciones más escuchadas...</p>
+      <p v-else>Cargando tus canciones más escuchadas...</p>
+    </form>
   </div>
-  <br />
 </template>
-
 <script>
 import { useSpotifyStore } from '@/stores/spotifyStore'
 
 export default {
   name: 'TopTracks',
+  data() {
+    return {
+      selectedTracks: []
+    }
+  },
   computed: {
     topTracks() {
       const spotifyStore = useSpotifyStore()
       return spotifyStore.topTracks
+    }
+  },
+  methods: {
+    checkLimit() {
+      if (this.selectedTracks.length > 5) {
+        this.selectedTracks = this.selectedTracks.slice(0, 5)
+      }
     }
   },
   async created() {
