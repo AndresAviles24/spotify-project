@@ -27,17 +27,12 @@ const getGenres = (token) => {
   })
 }
 
-const getRecommendations = (token, seedArtists, seedTracks, seedGenres, limit) => {
-  const params = new URLSearchParams({
-    seed_artists: seedArtists.join(','),
-    seed_tracks: seedTracks.join(','),
-    seed_genres: seedGenres.join(','),
-    limit
-  })
+const getRecommendations = (token, options) => {
+  return apiClient.get('/recommendations', {
+    headers: { Authorization: `Bearer ${token}` },
+    params: options,
+  });
+};
 
-  return apiClient.get(`/recommendations?${params}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  })
-}
 
-export { getTopTracks, getTopArtists, getGenres, getRecommendations }
+export { getTopTracks, getTopArtists, getGenres, getRecommendations};

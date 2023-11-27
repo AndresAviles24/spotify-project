@@ -33,15 +33,20 @@ import { useSpotifyStore } from '@/stores/spotifyStore'
 
 export default {
   name: 'TopArtists',
-  data() {
-    return {
-      selectedArtists: []
-    }
-  },
   computed: {
     topArtists() {
       const spotifyStore = useSpotifyStore()
       return spotifyStore.topArtists
+    },
+    selectedArtists: {
+      get() {
+        const spotifyStore = useSpotifyStore();
+        return spotifyStore.selectedArtists;
+      },
+      set(value) {
+        const spotifyStore = useSpotifyStore();
+        spotifyStore.updateSelectedArtists(value);
+      }
     }
   },
   methods: {

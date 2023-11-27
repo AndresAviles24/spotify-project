@@ -6,15 +6,14 @@
       <br />
       <top-artists v-if="authorized" />
       <top-tracks v-if="authorized" />
-      <genres-list v-if="authorized" />
-      <!-- Input para el total de canciones -->
+
+     <!-- <genres-list v-if="authorized" /> -->
       <div class="track-count" v-if="authorized">
         <br />
         <label for="track-count">Total de canciones (entre 1 y 100)</label>
         <input type="number" id="track-count" min="1" max="100" v-model.number="trackCount" />
       </div>
 
-      <!-- Especificaciones adicionales -->
       <div class="additional-specs" v-if="authorized">
         <br />
         <label for="additional-specs">Especificaciones adicionales</label>
@@ -39,7 +38,7 @@ import { useSpotifyStore } from '@/stores/spotifyStore'
 import { getToken } from '@/services/auth'
 import TopArtists from '@/components/TopArtists.vue'
 import TopTracks from '@/components/TopTracks.vue'
-import GenresList from '@/components/GenresList.vue'
+// import GenresList from '@/components/GenresList.vue'
 import AppHeader from '@/components/AppHeader.vue'
 import AppFooter from '@/components/AppFooter.vue'
 
@@ -61,7 +60,7 @@ export default {
   components: {
     TopArtists,
     TopTracks,
-    GenresList,
+    // GenresList,
     AppHeader,
     AppFooter
   },
@@ -92,7 +91,35 @@ export default {
     }
   },
   methods: {
-    async generatePlaylist() {}
+    async generatePlaylist() {
+    // Accede a la instancia de tu store de Pinia
+    const spotifyStore = useSpotifyStore();
+
+    // Ya tienes acceso a selectedArtists, selectedTracks y selectedGenres directamente desde el store
+    const { selectedArtists, selectedTracks,  } = spotifyStore;
+    const trackCount = this.trackCount; // La cantidad de tracks que el usuario desea obtener
+
+    // Opciones para las recomendaciones de Spotify
+    const options = {
+      seed_artists: selectedArtists.join(','),
+      seed_tracks: selectedTracks.join(','),
+      // seed_genres: selectedGenres.join(','),
+      limit: trackCount
+    };
+
+    console.log(options);
+
+    try {
+      // Llama a la acción de Pinia para obtener las recomendaciones
+      await spotifyStore.fetchRecommendations(options);
+
+      console.log(spotifyStore.recommendations);
+
+    } catch (error) {
+      console.error('Hubo un error al generar las recomendaciones:', error);
+      // Manejar el error como creas conveniente
+    }
+  }
   }
 }
 </script>
@@ -101,8 +128,8 @@ export default {
 .dashboard-container {
   margin-left: auto;
   margin-right: auto;
-  max-width: 1200px; /* O el ancho máximo que prefieras */
-  padding: 0 1rem; /* Esto añade un espacio a los lados dentro del contenedor */
+  max-width: 1200px; 
+  padding: 0 1rem; 
 }
 .additional-specs input[type='text'] {
   width: 100%; /* Establece el ancho al 100% del contenedor padre */

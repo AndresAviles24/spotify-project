@@ -4,7 +4,7 @@ import {
   getTopArtists,
   getTopTracks,
   getGenres,
-  getRecommendations
+  getRecommendations,
 } from '@/services/spotifyService'
 
 export const useSpotifyStore = defineStore('spotify', {
@@ -14,7 +14,10 @@ export const useSpotifyStore = defineStore('spotify', {
     topArtists: [], // Agrega un estado para almacenar los artistas top
     topTracks: [], // Agrega un estado para almacenar las pistas top
     genres: [], // Agrega un estado para almacenar los géneros
-    recommendations: []
+    recommendations: [],
+    selectedArtists: [], // Almacena los artistas seleccionados
+    selectedTracks: [],
+    selectedGenres: [], // Almacena los géneros seleccionados
   }),
   actions: {
     async fetchTopArtists() {
@@ -46,24 +49,6 @@ export const useSpotifyStore = defineStore('spotify', {
       }
     },
 
-    async fetchRecommendations(seedArtists, seedTracks, seedGenres, limit) {
-      try {
-        const response = await getRecommendations(
-          this.accessToken,
-          seedArtists,
-          seedTracks,
-          seedGenres,
-          limit
-        )
-        this.recommendations = response.data.tracks
-      } catch (error) {
-        console.error('Error al obtener recomendaciones:', error)
-      }
-    },
-
-    clearRecommendations() {
-      this.recommendations = []
-    },
 
     setToken(newToken) {
       this.accessToken = newToken
@@ -74,6 +59,29 @@ export const useSpotifyStore = defineStore('spotify', {
       this.accessToken = null // Limpia el token del estado
       localStorage.removeItem('spotify_access_token') // Elimina el token del almacenamiento local
       // Realiza acciones adicionales si es necesario
-    }
+    },
+
+    async fetchRecommendations(options) {
+      if (!this.accessToken) {
+        console.error('Acceso no autorizado: Token de acceso no disponible.');
+        return;
+      }
+      try {
+        const response = await getRecommendations(this.accessToken, options);
+        this.recommendations = response.data.tracks;
+      } catch (error) {
+        console.error('Error al obtener recomendaciones:', error);
+      }
+    },
+
+    updateSelectedArtists(artists) {
+      this.selectedArtists = artists;
+    },
+    updateSelectedTracks(tracks) {
+      this.selectedTracks = tracks;
+    },
+    updateSelectedGenres(genres) {
+      this.selectedGenres = genres;
+    },
   }
 })
