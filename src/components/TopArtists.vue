@@ -1,6 +1,6 @@
 <template>
   <div class="top-artists-container">
-    <h2>Tus Artistas Más Escuchados (elegir hasta 5)</h2>
+    <h2>Tus Artistas Más Escuchados</h2>
     <form class="artist-selection-form" v-if="topArtists.length > 0">
       <div class="artist-cards-container">
         <div class="card" v-for="artist in topArtists" :key="artist.id">
@@ -17,7 +17,6 @@
                 :id="`artist-${artist.id}`"
                 :value="artist.id"
                 v-model="selectedArtists"
-                @change="checkLimit"
               />
             </div>
           </label>
@@ -40,22 +39,16 @@ export default {
     },
     selectedArtists: {
       get() {
-        const spotifyStore = useSpotifyStore();
-        return spotifyStore.selectedArtists;
+        const spotifyStore = useSpotifyStore()
+        return spotifyStore.selectedArtists
       },
       set(value) {
-        const spotifyStore = useSpotifyStore();
-        spotifyStore.updateSelectedArtists(value);
+        const spotifyStore = useSpotifyStore()
+        spotifyStore.updateSelectedArtists(value)
       }
     }
   },
-  methods: {
-    checkLimit() {
-      if (this.selectedArtists.length > 5) {
-        this.selectedArtists = this.selectedArtists.slice(0, 5)
-      }
-    }
-  },
+  watch: {},
   async created() {
     const spotifyStore = useSpotifyStore()
     if (!spotifyStore.accessToken) {

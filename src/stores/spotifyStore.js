@@ -4,7 +4,7 @@ import {
   getTopArtists,
   getTopTracks,
   getGenres,
-  getRecommendations,
+  getRecommendations
 } from '@/services/spotifyService'
 
 export const useSpotifyStore = defineStore('spotify', {
@@ -17,8 +17,14 @@ export const useSpotifyStore = defineStore('spotify', {
     recommendations: [],
     selectedArtists: [], // Almacena los artistas seleccionados
     selectedTracks: [],
-    selectedGenres: [], // Almacena los géneros seleccionados
+    selectedGenres: [] // Almacena los géneros seleccionados
   }),
+  getters: {
+    combinedSelections: (state) => {
+      // Concatena y devuelve los artistas y pistas seleccionados
+      return [...state.selectedArtists, ...state.selectedTracks]
+    }
+  },
   actions: {
     async fetchTopArtists() {
       try {
@@ -49,7 +55,6 @@ export const useSpotifyStore = defineStore('spotify', {
       }
     },
 
-
     setToken(newToken) {
       this.accessToken = newToken
       localStorage.setItem('spotify_access_token', newToken)
@@ -63,25 +68,43 @@ export const useSpotifyStore = defineStore('spotify', {
 
     async fetchRecommendations(options) {
       if (!this.accessToken) {
-        console.error('Acceso no autorizado: Token de acceso no disponible.');
-        return;
+        console.error('Acceso no autorizado: Token de acceso no disponible.')
+        return
       }
       try {
-        const response = await getRecommendations(this.accessToken, options);
-        this.recommendations = response.data.tracks;
+        const response = await getRecommendations(this.accessToken, options)
+        this.recommendations = response.data.tracks
       } catch (error) {
-        console.error('Error al obtener recomendaciones:', error);
+        console.error('Error al obtener recomendaciones:', error)
+      }
+    },
+
+    checkAndLimitSelections() {
+      const totalSelections = this.selectedArtists.length + this.selectedTracks.length
+      if (totalSelections > 5) {
+        // Si se excede el total, ajusta las selecciones de pistas primero y luego las de artistas
+        this.selectedTracks = this.selectedTracks.slice(
+          0,
+          Math.max(5 - this.selectedArtists.length, 0)
+        )
+        this.selectedArtists = this.selectedArtists.slice(
+          0,
+          Math.max(5 - this.selectedTracks.length, 0)
+        )
+        alert('Solo puedes seleccionar un total combinado de 5 semillas entre artistas y pistas.')
       }
     },
 
     updateSelectedArtists(artists) {
-      this.selectedArtists = artists;
+      this.selectedArtists = artists
+      this.checkAndLimitSelections()
     },
     updateSelectedTracks(tracks) {
-      this.selectedTracks = tracks;
+      this.selectedTracks = tracks
+      this.checkAndLimitSelections()
     },
     updateSelectedGenres(genres) {
-      this.selectedGenres = genres;
-    },
+      this.selectedGenres = genres
+    }
   }
 })

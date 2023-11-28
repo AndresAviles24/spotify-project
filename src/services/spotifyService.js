@@ -30,9 +30,8 @@ const getGenres = (token) => {
 const getRecommendations = (token, options) => {
   return apiClient.get('/recommendations', {
     headers: { Authorization: `Bearer ${token}` },
-    params: options,
-  });
-};
+    params: options
+  })
+}
 
-
-export { getTopTracks, getTopArtists, getGenres, getRecommendations};
+export { getTopTracks, getTopArtists, getGenres, getRecommendations }

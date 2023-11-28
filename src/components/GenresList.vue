@@ -26,13 +26,13 @@ export default {
   name: 'GenresList',
   setup() {
     const spotifyStore = useSpotifyStore()
-    const selectedGenres = ref(Array(5).fill('')); // Inicializa con 5 géneros vacíos
+    const selectedGenres = ref(Array(5).fill('')) // Inicializa con 5 géneros vacíos
 
     // Actualiza el estado de los géneros seleccionados en el store
     const updateSelectedGenres = () => {
-      const nonEmptyGenres = selectedGenres.value.filter(Boolean); // Filtra las selecciones vacías
-      spotifyStore.updateSelectedGenres(nonEmptyGenres);
-    };
+      const nonEmptyGenres = selectedGenres.value.filter(Boolean) // Filtra las selecciones vacías
+      spotifyStore.updateSelectedGenres(nonEmptyGenres)
+    }
 
     const genres = computed(() => spotifyStore.genres)
 
@@ -51,7 +51,7 @@ export default {
     return {
       genres,
       selectedGenres,
-      updateSelectedGenres,
+      updateSelectedGenres
     }
   }
 }

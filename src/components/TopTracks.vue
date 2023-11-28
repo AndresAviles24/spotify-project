@@ -1,6 +1,6 @@
 <template>
   <div class="top-tracks-container">
-    <h2>Tus Canciones Más Escuchadas (elegir hasta 5)</h2>
+    <h2>Tus Canciones Más Escuchadas</h2>
     <form class="track-selection-form">
       <div v-if="topTracks.length > 0" class="track-cards-container">
         <div class="card" v-for="track in topTracks" :key="track.id">
@@ -18,7 +18,6 @@
                 :id="`track-${track.id}`"
                 :value="track.id"
                 v-model="selectedTracks"
-                @change="checkLimit"
               />
             </div>
           </label>
@@ -40,22 +39,16 @@ export default {
     },
     selectedTracks: {
       get() {
-        const spotifyStore = useSpotifyStore();
-        return spotifyStore.selectedTracks;
+        const spotifyStore = useSpotifyStore()
+        return spotifyStore.selectedTracks
       },
       set(value) {
-        const spotifyStore = useSpotifyStore();
-        spotifyStore.updateSelectedTracks(value);
+        const spotifyStore = useSpotifyStore()
+        spotifyStore.updateSelectedTracks(value)
       }
     }
   },
-  methods: {
-    checkLimit() {
-      if (this.selectedTracks.length > 5) {
-        this.selectedTracks = this.selectedTracks.slice(0, 5)
-      }
-    }
-  },
+
   async created() {
     const spotifyStore = useSpotifyStore()
     if (!spotifyStore.accessToken) {

@@ -7,7 +7,7 @@
       <top-artists v-if="authorized" />
       <top-tracks v-if="authorized" />
 
-     <!-- <genres-list v-if="authorized" /> -->
+      <!-- <genres-list v-if="authorized" /> -->
       <div class="track-count" v-if="authorized">
         <br />
         <label for="track-count">Total de canciones (entre 1 y 100)</label>
@@ -92,34 +92,33 @@ export default {
   },
   methods: {
     async generatePlaylist() {
-    // Accede a la instancia de tu store de Pinia
-    const spotifyStore = useSpotifyStore();
+      // Accede a la instancia de tu store de Pinia
+      const spotifyStore = useSpotifyStore()
 
-    // Ya tienes acceso a selectedArtists, selectedTracks y selectedGenres directamente desde el store
-    const { selectedArtists, selectedTracks,  } = spotifyStore;
-    const trackCount = this.trackCount; // La cantidad de tracks que el usuario desea obtener
+      // Ya tienes acceso a selectedArtists, selectedTracks y selectedGenres directamente desde el store
+      const { selectedArtists, selectedTracks } = spotifyStore
+      const trackCount = this.trackCount // La cantidad de tracks que el usuario desea obtener
 
-    // Opciones para las recomendaciones de Spotify
-    const options = {
-      seed_artists: selectedArtists.join(','),
-      seed_tracks: selectedTracks.join(','),
-      // seed_genres: selectedGenres.join(','),
-      limit: trackCount
-    };
+      // Opciones para las recomendaciones de Spotify
+      const options = {
+        seed_artists: selectedArtists.join(','),
+        seed_tracks: selectedTracks.join(','),
+        // seed_genres: selectedGenres.join(','),
+        limit: trackCount
+      }
 
-    console.log(options);
+      console.log(options)
 
-    try {
-      // Llama a la acción de Pinia para obtener las recomendaciones
-      await spotifyStore.fetchRecommendations(options);
+      try {
+        // Llama a la acción de Pinia para obtener las recomendaciones
+        await spotifyStore.fetchRecommendations(options)
 
-      console.log(spotifyStore.recommendations);
-
-    } catch (error) {
-      console.error('Hubo un error al generar las recomendaciones:', error);
-      // Manejar el error como creas conveniente
+        console.log(spotifyStore.recommendations)
+      } catch (error) {
+        console.error('Hubo un error al generar las recomendaciones:', error)
+        // Manejar el error como creas conveniente
+      }
     }
-  }
   }
 }
 </script>
@@ -128,8 +127,8 @@ export default {
 .dashboard-container {
   margin-left: auto;
   margin-right: auto;
-  max-width: 1200px; 
-  padding: 0 1rem; 
+  max-width: 1200px;
+  padding: 0 1rem;
 }
 .additional-specs input[type='text'] {
   width: 100%; /* Establece el ancho al 100% del contenedor padre */
