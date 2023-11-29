@@ -1,48 +1,66 @@
 <template>
-    <main>
-      <app-header />
-      <div class="playlist-suggestion-container">
-        <h1>Nueva playlist sugerida</h1>
-        <table class="suggestion-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th></th> <!-- Column for album image -->
-              <th>Título</th>
-              <th>Álbum</th>
-              <th>Duración</th>
-              <th>Acción</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(track, index) in recommendations" :key="track.id">
-              <td>{{ index + 1 }}</td>
-              <td>
-                <!-- Include a small album image -->
-                <img :src="track.album.images[0]?.url" class="album-cover" alt="Album Cover" />
-              </td>
-              <td>{{ track.name }}</td>
-              <td>{{ track.album.name }}</td>
-              <td>{{ formatDuration(track.duration_ms) }}</td>
-              <td>
-                <button @click="removeTrack(track.id)">Eliminar</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="playlist-actions">
-          <button @click="cancel">Cancelar</button>
-          <button @click="createPlaylist">Crear Playlist</button>
-        </div>
+  <main>
+    <app-header />
+    <div class="playlist-suggestion-container">
+      <input 
+        type="text" 
+        class="playlist-title-input" 
+        v-model="playlistTitle" 
+        placeholder="Nombre de la nueva playlist"
+      />
+      <table class="suggestion-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th></th> <!-- Column for album image -->
+            <th>Título</th>
+            <th>Artista</th>
+            <th>Álbum</th>
+            <th>Duración</th>
+            <th>30 segundos de prueba</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+    <tr v-for="(track, index) in recommendations" :key="track.id">
+      <td>{{ index + 1 }}</td>
+      <td>
+        <!-- Include a small album image -->
+        <img :src="track.album.images[0]?.url" class="album-cover" alt="Album Cover" />
+      </td>
+      <td>{{ track.name }}</td>
+      <td>{{ track.artists[0].name }}</td>
+      <td>{{ track.album.name }}</td>
+      <td>{{ formatDuration(track.duration_ms) }}</td>
+      <td>
+        <audio
+          :src="track.preview_url"
+          controls
+          @play="handleAudioPlay($event, index)"
+          class="audio-preview"
+        ></audio>
+      </td>
+      <td>
+        <button @click="removeTrack(track.id)">Eliminar</button>
+      </td>
+    </tr>
+  </tbody>
+      </table>
+      <div class="playlist-actions">
+        <button @click="cancel">Cancelar</button>
+        <button @click="createPlaylist">Crear Playlist</button>
       </div>
-      <app-footer />
-    </main>
-  </template>
+    </div>
+    <app-footer />
+  </main>
+</template>
+
   
   <script>
   import Swal from 'sweetalert2';
   import { useRouter } from 'vue-router';
   import AppHeader from '@/components/AppHeader.vue';
+  import { ref } from 'vue';
   import AppFooter from '@/components/AppFooter.vue';
   import { useSpotifyStore } from '@/stores/spotifyStore';
   
@@ -51,11 +69,17 @@
       AppFooter,
       AppHeader
     },
+    data() {
+    return {
+      playlistTitle: ''
+    };
+  },
     setup() {
       
         const router = useRouter();
         const spotifyStore = useSpotifyStore();
       const recommendations = spotifyStore.recommendations;
+    const playlistTitle = ref(''); // Ref para el título de la playlist
   
       const removeTrack = (trackId) => {
         Swal.fire({
@@ -99,12 +123,41 @@
         }
       });
       };
-  
-      // Implement function to create a new playlist
-      const createPlaylist = () => {
-        // ... logic to create playlist
-      };
-  
+
+      const createPlaylist = async () => {
+      if (!playlistTitle.value.trim()) {
+        // Mostrar error si el título está vacío
+        await Swal.fire({
+          title: 'Error',
+          text: 'Por favor, ingresa un nombre para la playlist.',
+          icon: 'error',
+          confirmButtonText: 'Ok'
+        });
+        return;
+      }
+
+      try {
+        // Llama a la acción de Pinia para crear la playlist
+        const playlistId = await spotifyStore.createPlaylist(playlistTitle.value);
+
+        // Llama a la acción de Pinia para agregar canciones a la playlist
+        const trackUris = recommendations.value.map(track => track.uri);
+        await spotifyStore.addTracksToPlaylist(playlistId, trackUris);
+
+        // Muestra un mensaje de éxito y redirige
+        await Swal.fire({
+          title: '¡Éxito!',
+          text: 'Playlist creada y canciones añadidas.',
+          icon: 'success',
+          confirmButtonText: 'Ok'
+        });
+        router.push('/some-route'); // Asegúrate de cambiar '/some-route' a la ruta que necesitas
+      } catch (error) {
+        console.error('Error al crear la playlist:', error);
+        // Manejo de errores
+      }
+    };
+
       // Convert milliseconds to mm:ss format
       const formatDuration = (durationMs) => {
         const minutes = Math.floor(durationMs / 60000);
@@ -115,10 +168,20 @@
       return {
         recommendations,
         removeTrack,
-        cancel,
         createPlaylist,
-        formatDuration
+        cancel,
+        formatDuration,
       };
+    },
+    methods: {
+      handleAudioPlay(event, index) {
+      document.querySelectorAll('audio').forEach((audioEl, idx) => {
+        if (idx !== index) {
+          audioEl.pause();
+          audioEl.currentTime = 0;
+        }
+      });
+    },
     }
   };
   </script>
@@ -157,5 +220,15 @@
     margin-right: 10px;
     padding: 10px 20px;
   }
+
+  audio {
+  max-width: 100%;
+  height: 30px; /* Ajusta según tus necesidades */
+}
+
+.audio-preview {
+  width: 100%; /* Establece el ancho al 100% para una mayor visibilidad */
+  height: auto; /* Ajusta automáticamente la altura */
+}
   </style>
   

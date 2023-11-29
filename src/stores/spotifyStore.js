@@ -107,28 +107,28 @@ export const useSpotifyStore = defineStore('spotify', {
 
     async createNewPlaylist(playlistName) {
       if (!this.accessToken) {
-        console.error('Acceso no autorizado: Token de acceso no disponible.');
-        return;
+        console.error('Acceso no autorizado: Token de acceso no disponible.')
+        return
       }
       try {
-        const userId = 'tu_user_id_de_spotify'; // Reemplaza con el ID de usuario de Spotify
-        const response = await createPlaylist(this.accessToken, userId, playlistName);
-        return response.data; // Devuelve los datos de la playlist creada
+        const userId = 'tu_user_id_de_spotify' // Reemplaza con el ID de usuario de Spotify
+        const response = await createPlaylist(this.accessToken, userId, playlistName)
+        return response.data // Devuelve los datos de la playlist creada
       } catch (error) {
-        console.error('Error al crear la playlist:', error);
+        console.error('Error al crear la playlist:', error)
       }
     },
 
     async addTracksToNewPlaylist(playlistId, tracks) {
       if (!this.accessToken) {
-        console.error('Acceso no autorizado: Token de acceso no disponible.');
-        return;
+        console.error('Acceso no autorizado: Token de acceso no disponible.')
+        return
       }
       try {
-        const trackUris = tracks.map(track => track.uri); // Obtiene los URIs de las canciones
-        await addTracksToPlaylist(this.accessToken, playlistId, trackUris);
+        const trackUris = tracks.map((track) => track.uri) // Obtiene los URIs de las canciones
+        await addTracksToPlaylist(this.accessToken, playlistId, trackUris)
       } catch (error) {
-        console.error('Error al agregar canciones a la playlist:', error);
+        console.error('Error al agregar canciones a la playlist:', error)
       }
     },
 
