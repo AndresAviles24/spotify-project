@@ -1,10 +1,13 @@
 // spotifyStore.js
 import { defineStore } from 'pinia'
+import Swal from 'sweetalert2'
 import {
   getTopArtists,
   getTopTracks,
   getGenres,
-  getRecommendations
+  getRecommendations,
+  createPlaylist,
+  addTracksToPlaylist
 } from '@/services/spotifyService'
 
 export const useSpotifyStore = defineStore('spotify', {
@@ -91,7 +94,41 @@ export const useSpotifyStore = defineStore('spotify', {
           0,
           Math.max(5 - this.selectedTracks.length, 0)
         )
-        alert('Solo puedes seleccionar un total combinado de 5 semillas entre artistas y pistas.')
+
+        // Alerta de sweetalert2
+        Swal.fire({
+          title: '¡Demasiadas selecciones!',
+          text: 'Solo puedes seleccionar un total combinado de 5 semillas entre artistas y pistas.',
+          icon: 'warning',
+          confirmButtonText: 'Entendido'
+        })
+      }
+    },
+
+    async createNewPlaylist(playlistName) {
+      if (!this.accessToken) {
+        console.error('Acceso no autorizado: Token de acceso no disponible.');
+        return;
+      }
+      try {
+        const userId = 'tu_user_id_de_spotify'; // Reemplaza con el ID de usuario de Spotify
+        const response = await createPlaylist(this.accessToken, userId, playlistName);
+        return response.data; // Devuelve los datos de la playlist creada
+      } catch (error) {
+        console.error('Error al crear la playlist:', error);
+      }
+    },
+
+    async addTracksToNewPlaylist(playlistId, tracks) {
+      if (!this.accessToken) {
+        console.error('Acceso no autorizado: Token de acceso no disponible.');
+        return;
+      }
+      try {
+        const trackUris = tracks.map(track => track.uri); // Obtiene los URIs de las canciones
+        await addTracksToPlaylist(this.accessToken, playlistId, trackUris);
+      } catch (error) {
+        console.error('Error al agregar canciones a la playlist:', error);
       }
     },
 

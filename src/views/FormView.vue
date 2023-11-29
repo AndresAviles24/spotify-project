@@ -10,7 +10,7 @@
       <!-- <genres-list v-if="authorized" /> -->
       <div class="track-count" v-if="authorized">
         <br />
-        <label for="track-count">Total de canciones (entre 1 y 100)</label>
+        <label for="track-count">Total de canciones (entre 1 y 100, 20 por defecto)</label>
         <input type="number" id="track-count" min="1" max="100" v-model.number="trackCount" />
       </div>
 
@@ -50,10 +50,15 @@ export default {
   },
   watch: {
     trackCount(newValue) {
-      if (newValue < 1) {
-        this.trackCount = 1
-      } else if (newValue > 100) {
-        this.trackCount = 100
+      const numValue = Number(newValue)
+      if (isNaN(numValue) || numValue === 0) {
+        this.trackCount = '' // Establecemos el valor a una cadena vacía si es NaN o cero
+      } else if (numValue < 1) {
+        this.trackCount = 1 // Establecemos el mínimo si es menor que 1
+      } else if (numValue > 100) {
+        this.trackCount = 100 // Establecemos el máximo si es mayor que 100
+      } else {
+        this.trackCount = numValue // Mantenemos el valor numérico si está dentro del rango válido
       }
     }
   },
@@ -97,7 +102,7 @@ export default {
 
       // Ya tienes acceso a selectedArtists, selectedTracks y selectedGenres directamente desde el store
       const { selectedArtists, selectedTracks } = spotifyStore
-      const trackCount = this.trackCount // La cantidad de tracks que el usuario desea obtener
+      const trackCount = this.trackCount
 
       // Opciones para las recomendaciones de Spotify
       const options = {
@@ -107,13 +112,15 @@ export default {
         limit: trackCount
       }
 
-      console.log(options)
+      // console.log(options)
 
       try {
         // Llama a la acción de Pinia para obtener las recomendaciones
         await spotifyStore.fetchRecommendations(options)
 
         console.log(spotifyStore.recommendations)
+
+        this.$router.push('/suggestions')
       } catch (error) {
         console.error('Hubo un error al generar las recomendaciones:', error)
         // Manejar el error como creas conveniente

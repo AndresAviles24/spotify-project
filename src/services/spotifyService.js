@@ -34,4 +34,24 @@ const getRecommendations = (token, options) => {
   })
 }
 
-export { getTopTracks, getTopArtists, getGenres, getRecommendations }
+// Función para crear una playlist
+const createPlaylist = (token, userId, playlistName) => {
+  return apiClient.post(`/users/${userId}/playlists`, {
+    name: playlistName,
+    description: 'Nueva playlist creada desde la app',
+    public: false
+  }, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+};
+
+// Función para agregar canciones a la playlist
+const addTracksToPlaylist = (token, playlistId, trackUris) => {
+  return apiClient.post(`/playlists/${playlistId}/tracks`, {
+    uris: trackUris
+  }, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+};
+
+export { getTopTracks, getTopArtists, getGenres, getRecommendations, createPlaylist, addTracksToPlaylist };
