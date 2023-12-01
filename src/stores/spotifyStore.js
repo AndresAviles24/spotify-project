@@ -6,8 +6,10 @@ import {
   getTopTracks,
   getGenres,
   getRecommendations,
+  getUserProfile,
   createPlaylist,
-  addTracksToPlaylist
+  addTracksToPlaylist,
+
 } from '@/services/spotifyService'
 
 export const useSpotifyStore = defineStore('spotify', {
@@ -107,28 +109,27 @@ export const useSpotifyStore = defineStore('spotify', {
 
     async createNewPlaylist(playlistName) {
       if (!this.accessToken) {
-        console.error('Acceso no autorizado: Token de acceso no disponible.')
-        return
+        console.error('Acceso no autorizado: Token de acceso no disponible.');
+        return;
       }
+
       try {
-        const userId = 'tu_user_id_de_spotify' // Reemplaza con el ID de usuario de Spotify
-        const response = await createPlaylist(this.accessToken, userId, playlistName)
-        return response.data // Devuelve los datos de la playlist creada
+        const userProfile = await getUserProfile(this.accessToken);
+        const userId = userProfile.data.id;
+        const playlistResponse = await createPlaylist(this.accessToken, userId, playlistName);
+        return playlistResponse.data.id;
       } catch (error) {
-        console.error('Error al crear la playlist:', error)
+        console.error('Error al crear la playlist:', error);
+        throw error;
       }
     },
 
-    async addTracksToNewPlaylist(playlistId, tracks) {
-      if (!this.accessToken) {
-        console.error('Acceso no autorizado: Token de acceso no disponible.')
-        return
-      }
+    async addTracksToPlaylist(playlistId, tracks) {
       try {
-        const trackUris = tracks.map((track) => track.uri) // Obtiene los URIs de las canciones
-        await addTracksToPlaylist(this.accessToken, playlistId, trackUris)
+        await addTracksToPlaylist(this.accessToken, playlistId, tracks);
       } catch (error) {
-        console.error('Error al agregar canciones a la playlist:', error)
+        console.error('Error al agregar canciones a la playlist:', error);
+        throw error;
       }
     },
 

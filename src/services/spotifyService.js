@@ -8,6 +8,13 @@ const apiClient = axios.create({
   }
 })
 
+const getUserProfile = (token) => {
+  return apiClient.get('/me', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+};
+
+
 // Ahora, estas funciones aceptan un token como argumento
 const getTopTracks = (token) => {
   return apiClient.get('/me/top/tracks', {
@@ -34,39 +41,34 @@ const getRecommendations = (token, options) => {
   })
 }
 
-// Función para crear una playlist
 const createPlaylist = (token, userId, playlistName) => {
   return apiClient.post(
     `/users/${userId}/playlists`,
     {
       name: playlistName,
-      description: 'Nueva playlist creada desde la app',
+      description: 'Playlist creada desde mi aplicación de Spotify',
       public: false
     },
-    {
-      headers: { Authorization: `Bearer ${token}` }
-    }
-  )
-}
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+};
 
-// Función para agregar canciones a la playlist
-const addTracksToPlaylist = (token, playlistId, trackUris) => {
+const addTracksToPlaylist = (token, playlistId, tracks) => {
+  const uris = tracks.map(track => track.uri);
   return apiClient.post(
     `/playlists/${playlistId}/tracks`,
-    {
-      uris: trackUris
-    },
-    {
-      headers: { Authorization: `Bearer ${token}` }
-    }
-  )
-}
+    { uris },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+};
+
 
 export {
   getTopTracks,
   getTopArtists,
   getGenres,
   getRecommendations,
-  createPlaylist,
-  addTracksToPlaylist
+  getUserProfile,
+  addTracksToPlaylist,
+  createPlaylist
 }

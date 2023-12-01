@@ -41,6 +41,8 @@ import TopTracks from '@/components/TopTracks.vue'
 // import GenresList from '@/components/GenresList.vue'
 import AppHeader from '@/components/AppHeader.vue'
 import AppFooter from '@/components/AppFooter.vue'
+import { generateText } from '@/services/openAIService';
+
 
 export default {
   data() {
@@ -96,6 +98,7 @@ export default {
     }
   },
   methods: {
+    /*
     async generatePlaylist() {
       // Accede a la instancia de tu store de Pinia
       const spotifyStore = useSpotifyStore()
@@ -108,7 +111,6 @@ export default {
       const options = {
         seed_artists: selectedArtists.join(','),
         seed_tracks: selectedTracks.join(','),
-        // seed_genres: selectedGenres.join(','),
         limit: trackCount
       }
 
@@ -126,6 +128,59 @@ export default {
         // Manejar el error como creas conveniente
       }
     }
+    */
+    async generatePlaylist() {
+      const spotifyStore = useSpotifyStore();
+
+      // Opciones predeterminadas para las recomendaciones de Spotify
+      let recommendationsOptions = {
+        seed_artists: spotifyStore.selectedArtists.join(','),
+        seed_tracks: spotifyStore.selectedTracks.join(','),
+        limit: this.trackCount
+      };
+
+      // Verifica si hay especificaciones adicionales.
+      if (this.additionalSpecifications.trim()) {
+        try {
+          // Genera un prompt para la API de OpenAI.
+          const openAIPrompt = `Dadas estas preferencias de música: ${this.additionalSpecifications}, ¿qué recomendaciones de canciones darías?`;
+
+          // Llama a la API de OpenAI para obtener recomendaciones basadas en el prompt.
+          const openAIResponse = await generateText(openAIPrompt);
+
+          // Procesa la respuesta de OpenAI y ajusta las opciones de recomendaciones de Spotify según sea necesario.
+          // Esta parte dependerá de cómo formatees la respuesta de OpenAI y cómo quieras utilizarla.
+          recommendationsOptions = this.parseOpenAIResponseForTrackAttributes(openAIResponse, recommendationsOptions);
+        } catch (error) {
+          console.error('Hubo un error al obtener recomendaciones de OpenAI:', error);
+          // Maneja el error como creas conveniente.
+        }
+      }
+
+      try {
+        // Llama a la acción de Pinia para obtener las recomendaciones con las opciones actualizadas.
+        await spotifyStore.fetchRecommendations(recommendationsOptions);
+        console.log(recommendationsOptions);
+        console.log(spotifyStore.recommendations);
+
+        this.$router.push('/suggestions');
+      } catch (error) {
+        console.error('Hubo un error al generar las recomendaciones de Spotify:', error);
+      }
+    },
+
+    parseOpenAIResponseForTrackAttributes(response, existingOptions) {
+      // Analiza la respuesta y extrae los valores numéricos para los atributos
+      const attributes = {};
+      const matches = response.match(/(\w+):\s(\d+(\.\d+)?)/g);
+      matches.forEach((match) => {
+        const [key, value] = match.split(': ');
+        attributes[`target_${key}`] = Number(value);
+      });
+
+      // Devuelve un objeto combinado con las opciones existentes y los nuevos atributos obtenidos de OpenAI
+      return { ...existingOptions, ...attributes };
+    },
   }
 }
 </script>

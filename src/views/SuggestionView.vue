@@ -22,29 +22,33 @@
           </tr>
         </thead>
         <tbody>
-    <tr v-for="(track, index) in recommendations" :key="track.id">
-      <td>{{ index + 1 }}</td>
-      <td>
-        <!-- Include a small album image -->
-        <img :src="track.album.images[0]?.url" class="album-cover" alt="Album Cover" />
-      </td>
-      <td>{{ track.name }}</td>
-      <td>{{ track.artists[0].name }}</td>
-      <td>{{ track.album.name }}</td>
-      <td>{{ formatDuration(track.duration_ms) }}</td>
-      <td>
-        <audio
-          :src="track.preview_url"
-          controls
-          @play="handleAudioPlay($event, index)"
-          class="audio-preview"
-        ></audio>
-      </td>
-      <td>
-        <button @click="removeTrack(track.id)">Eliminar</button>
-      </td>
-    </tr>
-  </tbody>
+          <tr v-for="(track, index) in recommendations" :key="track.id">
+            <td>{{ index + 1 }}</td>
+            <td>
+              <img 
+                :src="track.album.images[0]?.url" 
+                class="album-cover" 
+                alt="Album Cover" 
+                @click="showPopup = true; selectedTrack = track"
+              />
+            </td>
+            <td>{{ track.name }}</td>
+            <td>{{ track.artists[0].name }}</td>
+            <td>{{ track.album.name }}</td>
+            <td>{{ formatDuration(track.duration_ms) }}</td>
+            <td>
+              <audio
+                :src="track.preview_url"
+                controls
+                @play="handleAudioPlay($event, index)"
+                class="audio-preview"
+              ></audio>
+            </td>
+            <td>
+              <button @click="removeTrack(track.id)">Eliminar</button>
+            </td>
+          </tr>
+        </tbody>
       </table>
       <div class="playlist-actions">
         <button @click="cancel">Cancelar</button>
@@ -53,14 +57,34 @@
     </div>
     <app-footer />
   </main>
+
+  <!-- Popup para mostrar detalles de la canción -->
+  <div v-if="showPopup" class="popup-container" @click="showPopup = false">
+    <div class="popup" @click.stop>
+      <div class="popup-content">
+        <img :src="selectedTrack.album.images[0]?.url" class="album-cover-large" alt="Album Cover" />
+        <div class="track-details">
+          <h2>{{ selectedTrack.name }}</h2>
+          <p>Artista: {{ selectedTrack.artists.map(artist => artist.name).join(', ') }}</p>
+          <p>Álbum: {{ selectedTrack.album.name }}</p>
+          <p>Año de lanzamiento: {{ selectedTrack.album.release_date.split('-')[0] }}</p>
+          <p>Duración: {{ formatDuration(selectedTrack.duration_ms) }}</p>
+          <!-- Más detalles si están disponibles -->
+          <p>Nivel de popularidad (0-100): {{ selectedTrack.popularity }}</p>
+          <p v-if="selectedTrack.explicit">Contenido Explícito</p>
+          <a :href="selectedTrack.external_urls.spotify" target="_blank">Escuchar en Spotify</a>
+        </div>
+      </div>
+      <button @click="showPopup = false">Cerrar</button>
+    </div>
+  </div>
 </template>
 
-  
   <script>
   import Swal from 'sweetalert2';
   import { useRouter } from 'vue-router';
   import AppHeader from '@/components/AppHeader.vue';
-  import { ref } from 'vue';
+  // import { ref } from 'vue';
   import AppFooter from '@/components/AppFooter.vue';
   import { useSpotifyStore } from '@/stores/spotifyStore';
   
@@ -71,18 +95,18 @@
     },
     data() {
     return {
-      playlistTitle: ''
+      playlistTitle: 'Nueva Playlist',
+      showPopup: false,
+      selectedTrack: null,
     };
   },
     setup() {
-      
         const router = useRouter();
         const spotifyStore = useSpotifyStore();
-      const recommendations = spotifyStore.recommendations;
-    const playlistTitle = ref(''); // Ref para el título de la playlist
-  
-      const removeTrack = (trackId) => {
-        Swal.fire({
+      const recommendations = spotifyStore.recommendations;  
+      
+      const removeTrack = async (trackId) => {
+      const result = await Swal.fire({
         title: '¿Estás seguro?',
         text: "Esta acción no se puede deshacer.",
         icon: 'warning',
@@ -91,22 +115,20 @@
         cancelButtonColor: '#d33',
         confirmButtonText: 'Sí, eliminar',
         cancelButtonText: 'No, cancelar'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // Aquí va la lógica para eliminar la canción de la lista de recomendaciones
-          // Filtramos las recomendaciones actuales para excluir la canción eliminada
-          spotifyStore.recommendations = recommendations.value.filter((track) => track.id !== trackId);
-
-          // Opcionalmente, muestra un mensaje de éxito
-          Swal.fire(
-            'Eliminado',
-            'La canción ha sido eliminada de las recomendaciones.',
-            'success'
-          );
-        }
       });
-      };
-  
+
+      if (result.isConfirmed) {
+        // Elimina la canción del estado de recomendaciones en el store
+        spotifyStore.recommendations = spotifyStore.recommendations.filter(track => track.id !== trackId);
+
+        // Muestra un mensaje de éxito
+        Swal.fire(
+          'Eliminado',
+          'La canción ha sido eliminada de las recomendaciones.',
+          'success'
+        );
+      }
+    };
       const cancel = () => {
         Swal.fire({
         title: '¿Estás seguro?',
@@ -124,40 +146,6 @@
       });
       };
 
-      const createPlaylist = async () => {
-      if (!playlistTitle.value.trim()) {
-        // Mostrar error si el título está vacío
-        await Swal.fire({
-          title: 'Error',
-          text: 'Por favor, ingresa un nombre para la playlist.',
-          icon: 'error',
-          confirmButtonText: 'Ok'
-        });
-        return;
-      }
-
-      try {
-        // Llama a la acción de Pinia para crear la playlist
-        const playlistId = await spotifyStore.createPlaylist(playlistTitle.value);
-
-        // Llama a la acción de Pinia para agregar canciones a la playlist
-        const trackUris = recommendations.value.map(track => track.uri);
-        await spotifyStore.addTracksToPlaylist(playlistId, trackUris);
-
-        // Muestra un mensaje de éxito y redirige
-        await Swal.fire({
-          title: '¡Éxito!',
-          text: 'Playlist creada y canciones añadidas.',
-          icon: 'success',
-          confirmButtonText: 'Ok'
-        });
-        router.push('/some-route'); // Asegúrate de cambiar '/some-route' a la ruta que necesitas
-      } catch (error) {
-        console.error('Error al crear la playlist:', error);
-        // Manejo de errores
-      }
-    };
-
       // Convert milliseconds to mm:ss format
       const formatDuration = (durationMs) => {
         const minutes = Math.floor(durationMs / 60000);
@@ -168,12 +156,29 @@
       return {
         recommendations,
         removeTrack,
-        createPlaylist,
         cancel,
         formatDuration,
       };
     },
     methods: {
+
+      async createPlaylist() {
+      const spotifyStore = useSpotifyStore();
+      const playlistName = 'Nombre de mi Nueva Playlist'; // Obtén el nombre de alguna manera
+
+      try {
+        const playlistId = await spotifyStore.createNewPlaylist(playlistName);
+        await spotifyStore.addTracksToPlaylist(playlistId, spotifyStore.recommendations);
+
+        // Notificar al usuario de éxito
+        // Redirigir o actualizar la interfaz según sea necesario
+      } catch (error) {
+        console.error('Error al crear la playlist o agregar canciones:', error);
+        // Notificar al usuario del error
+      }
+    },
+
+
       handleAudioPlay(event, index) {
       document.querySelectorAll('audio').forEach((audioEl, idx) => {
         if (idx !== index) {
@@ -181,6 +186,11 @@
           audioEl.currentTime = 0;
         }
       });
+    },
+
+    openPopup(track) {
+      this.selectedTrack = track;
+      this.showPopup = true;
     },
     }
   };
@@ -206,9 +216,10 @@
   }
   
   .album-cover {
-    width: 50px; /* Adjust size as needed */
-    height: 50px; /* Adjust size as needed */
+    width: 50px;
+    height: 50px;
     object-fit: cover;
+    cursor: pointer; /* Añade cursor pointer para indicar que es clickeable */
   }
   
   .playlist-actions {
@@ -220,15 +231,55 @@
     margin-right: 10px;
     padding: 10px 20px;
   }
-
+  
   audio {
-  max-width: 100%;
-  height: 30px; /* Ajusta según tus necesidades */
+    max-width: 100%;
+    height: 30px;
+  }
+  
+  .audio-preview {
+    width: 100%;
+    height: auto;
+  }
+  
+/* Estilos para el popup */
+.popup-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
 }
 
-.audio-preview {
-  width: 100%; /* Establece el ancho al 100% para una mayor visibilidad */
-  height: auto; /* Ajusta automáticamente la altura */
+.popup {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.popup-content {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.album-cover-large {
+  width: 300px; /* Ajusta según tus necesidades */
+  height: 300px; /* Ajusta según tus necesidades */
+  object-fit: cover;
+  margin-right: 20px;
+}
+
+.track-details {
+  flex-grow: 1;
+  text-align: left;
 }
   </style>
-  
