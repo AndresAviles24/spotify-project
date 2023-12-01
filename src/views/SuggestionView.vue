@@ -171,7 +171,14 @@
         await spotifyStore.addTracksToPlaylist(playlistId, spotifyStore.recommendations);
 
         // Notificar al usuario de éxito
-        // Redirigir o actualizar la interfaz según sea necesario
+      Swal.fire({
+        title: '¡Éxito!',
+        text: 'La playlist ha sido creada y las canciones añadidas.',
+        icon: 'success',
+        confirmButtonText: 'Genial'
+      });
+
+      this.$router.push('/form');
       } catch (error) {
         console.error('Error al crear la playlist o agregar canciones:', error);
         // Notificar al usuario del error

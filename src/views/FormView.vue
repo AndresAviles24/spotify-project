@@ -10,16 +10,17 @@
       <!-- <genres-list v-if="authorized" /> -->
       <div class="track-count" v-if="authorized">
         <br />
-        <label for="track-count">Total de canciones (entre 1 y 100, 20 por defecto)</label>
+        <label for="track-count">Total de canciones (entre 1 y 100)</label>
         <input type="number" id="track-count" min="1" max="100" v-model.number="trackCount" />
       </div>
 
+<!--
       <div class="additional-specs" v-if="authorized">
         <br />
         <label for="additional-specs">Especificaciones adicionales</label>
         <input type="text" id="additional-specs" v-model="additionalSpecifications" />
       </div>
-
+    -->
       <!-- Botón para generar la playlist -->
       <div v-if="authorized">
         <button @click="generatePlaylist">Generar Playlist</button>
@@ -41,7 +42,7 @@ import TopTracks from '@/components/TopTracks.vue'
 // import GenresList from '@/components/GenresList.vue'
 import AppHeader from '@/components/AppHeader.vue'
 import AppFooter from '@/components/AppFooter.vue'
-import { generateText } from '@/services/openAIService';
+// import { generateText } from '@/services/openAIService';
 
 
 export default {
@@ -140,6 +141,7 @@ export default {
       };
 
       // Verifica si hay especificaciones adicionales.
+      /*
       if (this.additionalSpecifications.trim()) {
         try {
           // Genera un prompt para la API de OpenAI.
@@ -156,7 +158,7 @@ export default {
           // Maneja el error como creas conveniente.
         }
       }
-
+      */
       try {
         // Llama a la acción de Pinia para obtener las recomendaciones con las opciones actualizadas.
         await spotifyStore.fetchRecommendations(recommendationsOptions);
